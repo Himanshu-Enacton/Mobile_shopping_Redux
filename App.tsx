@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import CartList from './components/CartList';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import UserList from './components/UserList';
 
 const Stack = createNativeStackNavigator();
 function App() {
@@ -14,6 +15,7 @@ function App() {
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Home" component={ProductWrapper} />
             <Stack.Screen name="List" component={CartList} />
+            <Stack.Screen name="User" component={UserList} />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>

@@ -1,5 +1,19 @@
 import type { Item } from '../Products';
-import {ADD_TO_CART, REMOVE_TO_CART} from './constants';
+import {
+    ADD_TO_CART,
+    REMOVE_TO_CART,
+    USER_LIST,
+    USER_LIST_FAILURE,
+    USER_LIST_SUCCESS,
+} from './constants';
+
+export type User = {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    image: string;
+};
 
 export function addToCart(item: Item){
     return {
@@ -12,4 +26,23 @@ export function removeToCart(itemId: number){
         type:REMOVE_TO_CART,
         data:itemId
     }
+}
+export function getUserList(){
+    return {
+        type: USER_LIST as typeof USER_LIST,
+    }
+}
+
+export function userListSuccess(users: User[]) {
+    return {
+        type: USER_LIST_SUCCESS as typeof USER_LIST_SUCCESS,
+        data: users,
+    };
+}
+
+export function userListFailure(error: string) {
+    return {
+        type: USER_LIST_FAILURE as typeof USER_LIST_FAILURE,
+        data: error,
+    };
 }

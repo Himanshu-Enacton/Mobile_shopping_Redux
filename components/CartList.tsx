@@ -132,6 +132,8 @@ const styles = StyleSheet.create({
   },
   backArrow: { fontSize: 29, lineHeight: 31, color: '#353532', marginTop: -3 },
   headerTitle: {
+
+    backgroundColor:'red',
     position: 'absolute',
     alignSelf: 'center',
     left: 0,

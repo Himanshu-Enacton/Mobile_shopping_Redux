@@ -1,4 +1,10 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React from 'react';
 import Header from './Header';
 import Products from './Products';
@@ -10,9 +16,34 @@ export default function ProductWrapper({ navigation }:any) {
       <ScrollView>
         <Products />
       </ScrollView>
+      <TouchableOpacity
+        style={styles.userButton}
+        activeOpacity={0.75}
+        onPress={() => navigation.navigate('User')}
+      >
+        <Text style={styles.userButtonText}>User</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 const styles = StyleSheet.create({
-  flex:{flex:1},
-})
+  flex: { flex: 1 },
+  userButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 24,
+    minWidth: 68,
+    height: 48,
+    paddingHorizontal: 18,
+    borderRadius: 24,
+    backgroundColor: '#292927',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#222',
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  userButtonText: { fontSize: 14, fontWeight: '700', color: '#ffffff' },
+});
