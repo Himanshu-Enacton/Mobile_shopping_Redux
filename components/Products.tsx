@@ -3,12 +3,14 @@ import {
   Modal,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { addToCart, removeToCart } from './redux/action';
 import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
+import { Feather } from '@react-native-vector-icons/feather/static';
 
 type SortOption =
   | 'recommended'
@@ -39,7 +41,7 @@ const priceRanges: {
   { id: 'under-30000', label: 'Under ₹30,000', min: 0, max: 30000 },
   { id: '30000-49999', label: '₹30,000–₹49,999', min: 30000, max: 50000 },
   { id: '50000-74999', label: '₹50,000–₹74,999', min: 50000, max: 75000 },
-  { id: '75000-plus', label: '₹75,000 and above', min: 75000, max: null },
+  { id: '75000-plus', label: '₹75,000 +', min: 75000, max: null },
 ];
 
 export type Item = {
@@ -152,15 +154,19 @@ export default function Products() {
   const [openPopup, setOpenPopup] = useState<'sort' | 'price' | null>(null);
   const [selectedSort, setSelectedSort] = useState<SortOption>('recommended');
   const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeId>('any');
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const activePriceRange = priceRanges.find(
     range => range.id === selectedPriceRange,
   );
+  const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase();
   const filteredProducts = products.filter(
     item =>
       activePriceRange !== undefined &&
       item.price >= activePriceRange.min &&
-      (activePriceRange.max === null || item.price < activePriceRange.max),
+      (activePriceRange.max === null || item.price < activePriceRange.max) &&
+      item.name.toLocaleLowerCase().includes(normalizedSearchQuery),
   );
   const visibleProducts = [...filteredProducts].sort((first, second) => {
     switch (selectedSort) {
@@ -202,7 +208,7 @@ export default function Products() {
           onPress={() => setOpenPopup('sort')}
         >
           <Text style={styles.filterText}>Sort</Text>
-          <Text style={styles.chevron}>⌄</Text>
+          <Feather name="chevron-down" size={14} color="#282827" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.filterButton}
@@ -214,19 +220,60 @@ export default function Products() {
               ? 'Price'
               : activePriceRange?.label}
           </Text>
-          <Text style={styles.chevron}>⌄</Text>
+          <Feather name="chevron-down" size={14} color="#282827" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.slidersButton} activeOpacity={0.75}>
-          <View style={styles.searchIcon}>
-                      <View style={styles.searchHandel} />
-                    </View>
+        {isSearchVisible ? (
+          <View style={styles.searchInputRow}>
+            <TextInput
+              style={styles.searchInput}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search..."
+              placeholderTextColor="#858580"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+              textAlignVertical="center"
+              accessibilityLabel="Search products by name"
+            />
+            {searchQuery.length > 0 ? (
+              <TouchableOpacity
+                style={styles.clearSearchButton}
+                onPress={() => setSearchQuery('')}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel="Clear search"
+              >
+                <Feather name="x" size={18} color="#777773" />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ) : null}
+        <TouchableOpacity
+          style={[
+            styles.searchButton,
+            isSearchVisible && styles.searchButtonInline,
+          ]}
+          activeOpacity={0.75}
+          onPress={() => {
+            setIsSearchVisible(current => !current);
+            if (isSearchVisible) {
+              setSearchQuery('');
+            }
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={isSearchVisible ? 'Close search' : 'Search products'}
+        >
+          <Feather name="search" size={20} color="#272725" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.grid}>
         {visibleProducts.length === 0 ? (
           <Text style={styles.emptyMessage}>
-            No products match this price range.
+            {normalizedSearchQuery
+              ? `No products found for "${searchQuery.trim()}".`
+              : 'No products match this price range.'}
           </Text>
         ) : null}
         {visibleProducts.map(item => {
@@ -241,13 +288,8 @@ export default function Products() {
                   source={{ uri: item.image }}
                 />
                 <TouchableOpacity style={styles.heart} activeOpacity={0.7}>
-                  <Text style={styles.heartText}>♡</Text>
+                  <Feather name="heart" size={18} color="#272725" />
                 </TouchableOpacity>
-                {item.id === 1 || item.id === 5 ? (
-                  <View style={styles.newBadge}>
-                    <Text style={styles.newBadgeText}>New</Text>
-                  </View>
-                ) : null}
               </View>
               <View style={styles.details}>
                 <Text numberOfLines={2} style={styles.name}>
@@ -266,7 +308,7 @@ export default function Products() {
                       style={styles.quantityButton}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.quantitySymbol}>−</Text>
+                      <Feather name="minus" size={16} color="#272725" />
                     </TouchableOpacity>
                     <Text style={styles.quantity}>
                       {matchedCartItem.quantity}
@@ -276,7 +318,7 @@ export default function Products() {
                       style={styles.quantityButton}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.quantitySymbol}>+</Text>
+                      <Feather name="plus" size={16} color="#272725" />
                     </TouchableOpacity>
                   </View>
                 ) : (
@@ -318,7 +360,7 @@ export default function Products() {
                 accessibilityRole="button"
                 accessibilityLabel="Close options"
               >
-                <Text style={styles.closeButton}>×</Text>
+                <Feather name="x" size={20} color="#777773" />
               </TouchableOpacity>
             </View>
             {popupOptions.map(option => (
@@ -359,25 +401,31 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     gap: 8,
   },
-  searchIcon: {
-    width: 18,
-    height: 16,
-    marginTop: 5,
-    borderWidth: 1.8,
-    borderColor: '#272725',
-    borderRadius: 3,
+  searchInputRow: {
+    flex: 1,
+    minWidth: 0,
+    height: 36,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 18,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e5e1',
   },
-  searchHandle: {
-    position: 'absolute',
-    width: 9,
-    height: 7,
-    top: -7,
-    borderWidth: 1.8,
-    borderColor: '#272725',
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+  searchInput: {
+    flex: 1,
+    minWidth: 0,
+    height: '100%',
+    paddingVertical: 0,
+    color: '#282827',
+    fontSize: 12,
+  },
+  clearSearchButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterButton: {
     height: 36,
@@ -389,7 +437,6 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   filterText: { fontSize: 11, fontWeight: '600', color: '#282827' },
-  chevron: { fontSize: 15, color: '#282827', marginTop: -7 },
   emptyMessage: {
     width: '100%',
     paddingVertical: 28,
@@ -417,7 +464,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalTitle: { fontSize: 17, fontWeight: '700', color: '#252523' },
-  closeButton: { fontSize: 27, lineHeight: 30, color: '#777773' },
   optionRow: {
     minHeight: 49,
     flexDirection: 'row',
@@ -443,7 +489,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#272725',
   },
-  slidersButton: {
+  searchButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -452,7 +498,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 'auto',
   },
-  sliders: { fontSize: 19, color: '#282827', transform: [{ rotate: '90deg' }] },
+  searchButtonInline: { marginLeft: 0 },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -488,17 +534,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heartText: { fontSize: 21, lineHeight: 23, color: '#272725' },
-  newBadge: {
-    position: 'absolute',
-    top: 9,
-    left: 9,
-    backgroundColor: '#f7f7f4',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 9,
-  },
-  newBadgeText: { fontSize: 9, fontWeight: '700', color: '#343432' },
   details: { paddingHorizontal: 10, paddingTop: 10, paddingBottom: 11 },
   name: {
     fontSize: 13,
@@ -534,6 +569,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quantitySymbol: { fontSize: 18, lineHeight: 21, color: '#272725' },
   quantity: { minWidth: 14, textAlign: 'center', fontSize: 12, fontWeight: '700' },
 });
