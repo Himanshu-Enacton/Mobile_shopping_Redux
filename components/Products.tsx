@@ -1,6 +1,46 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { addToCart, removeToCart } from './redux/action';
 import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
+
+type SortOption =
+  | 'recommended'
+  | 'price-low-high'
+  | 'price-high-low'
+  | 'name-a-z';
+type PriceRangeId =
+  | 'any'
+  | 'under-30000'
+  | '30000-49999'
+  | '50000-74999'
+  | '75000-plus';
+
+const sortOptions: { id: SortOption; label: string }[] = [
+  { id: 'recommended', label: 'Recommended' },
+  { id: 'price-low-high', label: 'Price: low to high' },
+  { id: 'price-high-low', label: 'Price: high to low' },
+  { id: 'name-a-z', label: 'Name: A to Z' },
+];
+
+const priceRanges: {
+  id: PriceRangeId;
+  label: string;
+  min: number;
+  max: number | null;
+}[] = [
+  { id: 'any', label: 'Any price', min: 0, max: null },
+  { id: 'under-30000', label: 'Under ₹30,000', min: 0, max: 30000 },
+  { id: '30000-49999', label: '₹30,000–₹49,999', min: 30000, max: 50000 },
+  { id: '50000-74999', label: '₹50,000–₹74,999', min: 50000, max: 75000 },
+  { id: '75000-plus', label: '₹75,000 and above', min: 75000, max: null },
+];
 
 export type Item = {
   id: number;
@@ -15,6 +55,7 @@ export type CartItem = Item & {
 };
 
 export default function Products() {
+
   const products = [
     {
       id: 1,
@@ -96,6 +137,7 @@ export default function Products() {
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ6Ekyp9jLjWMwOalnquLkO7sbUyn7crB0Bfnq2-pODg&s=10',
     },
   ];
+  
   const cartItems = useSelector(
     (state: { reducer: CartItem[] }) => state.reducer,
   );
@@ -107,28 +149,87 @@ export default function Products() {
     dispatch(removeToCart(id));
   };
 
+  const [openPopup, setOpenPopup] = useState<'sort' | 'price' | null>(null);
+  const [selectedSort, setSelectedSort] = useState<SortOption>('recommended');
+  const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeId>('any');
+
+  const activePriceRange = priceRanges.find(
+    range => range.id === selectedPriceRange,
+  );
+  const filteredProducts = products.filter(
+    item =>
+      activePriceRange !== undefined &&
+      item.price >= activePriceRange.min &&
+      (activePriceRange.max === null || item.price < activePriceRange.max),
+  );
+  const visibleProducts = [...filteredProducts].sort((first, second) => {
+    switch (selectedSort) {
+      case 'price-low-high':
+        return first.price - second.price;
+      case 'price-high-low':
+        return second.price - first.price;
+      case 'name-a-z':
+        return first.name.localeCompare(second.name);
+      case 'recommended':
+        return first.id - second.id;
+    }
+  });
+  const popupOptions =
+    openPopup === 'sort' ? sortOptions : openPopup === 'price' ? priceRanges : [];
+  const selectedOption =
+    openPopup === 'sort' ? selectedSort : selectedPriceRange;
+  const handleSelectOption = (optionId: SortOption | PriceRangeId) => {
+    if (openPopup === 'sort') {
+      const option = sortOptions.find(({ id }) => id === optionId);
+      if (option) {
+        setSelectedSort(option.id);
+      }
+    } else if (openPopup === 'price') {
+      const option = priceRanges.find(({ id }) => id === optionId);
+      if (option) {
+        setSelectedPriceRange(option.id);
+      }
+    }
+    setOpenPopup(null);
+  };
+
   return (
     <View style={styles.page}>
       <View style={styles.toolbar}>
-        <TouchableOpacity style={styles.filterButton} activeOpacity={0.75}>
+        <TouchableOpacity
+          style={styles.filterButton}
+          activeOpacity={0.75}
+          onPress={() => setOpenPopup('sort')}
+        >
           <Text style={styles.filterText}>Sort</Text>
           <Text style={styles.chevron}>⌄</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterButton} activeOpacity={0.75}>
-          <Text style={styles.filterText}>Category</Text>
-          <Text style={styles.chevron}>⌄</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterButton} activeOpacity={0.75}>
-          <Text style={styles.filterText}>Price</Text>
+        <TouchableOpacity
+          style={styles.filterButton}
+          activeOpacity={0.75}
+          onPress={() => setOpenPopup('price')}
+        >
+          <Text style={styles.filterText}>
+            {selectedPriceRange === 'any'
+              ? 'Price'
+              : activePriceRange?.label}
+          </Text>
           <Text style={styles.chevron}>⌄</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.slidersButton} activeOpacity={0.75}>
-          <Text style={styles.sliders}>☷</Text>
+          <View style={styles.searchIcon}>
+                      <View style={styles.searchHandel} />
+                    </View>
         </TouchableOpacity>
       </View>
 
       <View style={styles.grid}>
-        {products.map(item => {
+        {visibleProducts.length === 0 ? (
+          <Text style={styles.emptyMessage}>
+            No products match this price range.
+          </Text>
+        ) : null}
+        {visibleProducts.map(item => {
           const matchedCartItem = cartItems.find(
             cartItem => cartItem.id === item.id,
           );
@@ -192,6 +293,59 @@ export default function Products() {
           );
         })}
       </View>
+      <Modal
+        visible={openPopup !== null}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setOpenPopup(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setOpenPopup(null)}
+            accessibilityRole="button"
+            accessibilityLabel="Close options"
+          />
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {openPopup === 'sort' ? 'Sort by' : 'Filter by price'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setOpenPopup(null)}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel="Close options"
+              >
+                <Text style={styles.closeButton}>×</Text>
+              </TouchableOpacity>
+            </View>
+            {popupOptions.map(option => (
+              <TouchableOpacity
+                key={option.id}
+                style={styles.optionRow}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityState={{ selected: option.id === selectedOption }}
+                onPress={() => handleSelectOption(option.id)}
+              >
+                <Text style={styles.optionText}>{option.label}</Text>
+                <View
+                  style={[
+                    styles.radioOuter,
+                    option.id === selectedOption && styles.radioOuterSelected,
+                  ]}
+                >
+                  {option.id === selectedOption ? (
+                    <View style={styles.radioInner} />
+                  ) : null}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -205,6 +359,26 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     gap: 8,
   },
+  searchIcon: {
+    width: 18,
+    height: 16,
+    marginTop: 5,
+    borderWidth: 1.8,
+    borderColor: '#272725',
+    borderRadius: 3,
+    alignItems: 'center',
+  },
+  searchHandle: {
+    position: 'absolute',
+    width: 9,
+    height: 7,
+    top: -7,
+    borderWidth: 1.8,
+    borderColor: '#272725',
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+  },
   filterButton: {
     height: 36,
     paddingHorizontal: 11,
@@ -215,7 +389,60 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   filterText: { fontSize: 11, fontWeight: '600', color: '#282827' },
-  chevron: { fontSize: 15, color: '#282827', marginTop: -3 },
+  chevron: { fontSize: 15, color: '#282827', marginTop: -7 },
+  emptyMessage: {
+    width: '100%',
+    paddingVertical: 28,
+    textAlign: 'center',
+    color: '#777773',
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 28,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  modalTitle: { fontSize: 17, fontWeight: '700', color: '#252523' },
+  closeButton: { fontSize: 27, lineHeight: 30, color: '#777773' },
+  optionRow: {
+    minHeight: 49,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ecece9',
+  },
+  optionText: { fontSize: 14, color: '#282827' },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#aaa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioOuterSelected: { borderColor: '#272725' },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#272725',
+  },
   slidersButton: {
     width: 36,
     height: 36,
