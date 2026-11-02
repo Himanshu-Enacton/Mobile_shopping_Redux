@@ -1,3 +1,4 @@
+import { theme } from '../assets/Themes';
 import {
   Image,
   ScrollView,
@@ -19,8 +20,9 @@ export default function CartList({ navigation }: { navigation: any }) {
   const handleAddToCart = (item: Item) => {
     dispatch(addToCart(item));
   };
-  const handleRemoveFromCart = (id: number,//quantity: number
-    ) => {
+  const handleRemoveFromCart = (
+    id: number, //quantity: number
+  ) => {
     // if(quantity===1){
     //   setTimeout(()=>{
     //     dispatch(removeToCart(id))
@@ -78,8 +80,11 @@ export default function CartList({ navigation }: { navigation: any }) {
                 <Text style={styles.deleteIcon}>♧</Text>
                 <View style={styles.quantityRow}>
                   <TouchableOpacity
-                    onPress={() => handleRemoveFromCart(item.id,//item.quantity
-                      )}
+                    onPress={() =>
+                      handleRemoveFromCart(
+                        item.id, //item.quantity
+                      )
+                    }
                     style={styles.quantityButton}
                     activeOpacity={0.7}
                   >
@@ -87,7 +92,9 @@ export default function CartList({ navigation }: { navigation: any }) {
                   </TouchableOpacity>
                   <Text style={styles.quantity}>{item.quantity}</Text>
                   <TouchableOpacity
-                    onPress={() => {handleAddToCart(item);}}
+                    onPress={() => {
+                      handleAddToCart(item);
+                    }}
                     style={styles.quantityButton}
                     activeOpacity={0.7}
                   >
@@ -114,7 +121,7 @@ export default function CartList({ navigation }: { navigation: any }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f6f6f4' },
+  screen: { flex: 1, backgroundColor: theme.screenBackground },
   header: {
     height: 80,
     paddingHorizontal: 20,
@@ -126,11 +133,11 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     borderRadius: 18,
-    backgroundColor: '#eeeeeb',
+    backgroundColor: theme.backButtonBackground,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backArrow: { fontSize: 29, lineHeight: 31, color: '#353532', marginTop: -3 },
+  backArrow: { ...theme.text29, color: theme.textBackArrow, marginTop: -3 },
   headerTitle: {
     // backgroundColor:'red',
     // position: 'absolute',
@@ -138,17 +145,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#252523',
+    ...theme.text16Bold,
+
+    color: theme.textPrimary,
   },
   checkoutPill: {
-    backgroundColor: '#ebe8e0',
+    backgroundColor: theme.checkoutPillBackground,
     borderRadius: 18,
     paddingHorizontal: 13,
     paddingVertical: 9,
   },
-  checkoutText: { fontSize: 11, fontWeight: '700', color: '#33332f' },
+  checkoutText: { ...theme.text11Bold, color: theme.textCheckout },
   scroll: { flex: 1 },
   content: {
     paddingHorizontal: 18,
@@ -161,8 +168,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 15,
     flexDirection: 'row',
-    backgroundColor: '#eeece7',
-    shadowColor: '#232320',
+    backgroundColor: theme.cartCardBackground,
+    shadowColor: theme.shadowCart,
     shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 7,
@@ -173,21 +180,21 @@ const styles = StyleSheet.create({
     height: 88,
     overflow: 'hidden',
     borderRadius: 10,
-    backgroundColor: '#dfded9',
+    backgroundColor: theme.cartImageBackground,
   },
   mobileImage: { height: '100%', width: '100%', resizeMode: 'cover' },
   productInfo: { flex: 1, paddingHorizontal: 8, paddingTop: 4 },
-  name: { fontSize: 12, lineHeight: 15, fontWeight: '700', color: '#252523' },
-  color: { fontSize: 10, lineHeight: 14, color: '#777771', marginTop: 2 },
-  price: { fontSize: 12, fontWeight: '800', color: '#272725', marginTop: 3 },
+  name: { ...theme.text12BoldLine15, color: theme.textPrimary },
+  color: { ...theme.text10, color: theme.textCartSecondary, marginTop: 2 },
+  price: { ...theme.text12ExtraBold, color: theme.textStrong, marginTop: 3 },
   actions: {
     width: 59,
     alignItems: 'flex-end',
     justifyContent: 'space-between',
   },
   deleteIcon: {
-    fontSize: 17,
-    color: '#8a8984',
+    ...theme.text17,
+    color: theme.iconMuted,
     transform: [{ rotate: '180deg' }],
     marginRight: 2,
     marginTop: -3,
@@ -205,34 +212,37 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#dad7cf',
+    backgroundColor: theme.cartQuantityBackground,
   },
   quantitySymbol: {
-    fontSize: 16,
-    lineHeight: 18,
-    color: '#46463f',
-    fontWeight: '500',
+    ...theme.text16Medium,
+
+    color: theme.textQuantitySymbol,
   },
-  quantity: { fontSize: 12, color: '#30302d', fontWeight: '700' },
+  quantity: { ...theme.text12Bold, color: theme.textQuantity },
   emptyState: { paddingTop: 90, alignItems: 'center' },
-  emptyTitle: { fontSize: 17, fontWeight: '700', color: '#2c2c29' },
-  emptyText: { fontSize: 13, color: '#787873', marginTop: 6 },
+  emptyTitle: { ...theme.text17Bold, color: theme.textEmptyTitle },
+  emptyText: {
+    ...theme.text13,
+    color: theme.textEmptyDescription,
+    marginTop: 6,
+  },
   footer: {
     minHeight: 74,
     paddingHorizontal: 25,
     borderTopWidth: 1,
-    borderColor: '#e6e4de',
-    backgroundColor: '#f6f6f4',
+    borderColor: theme.borderFooter,
+    backgroundColor: theme.screenBackground,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  total: { fontSize: 12, fontWeight: '700', color: '#33332f' },
+  total: { ...theme.text12Bold, color: theme.textCheckout },
   continueButton: {
     borderRadius: 18,
-    backgroundColor: '#ded9ce',
+    backgroundColor: theme.checkoutButtonBackground,
     paddingHorizontal: 15,
     paddingVertical: 10,
   },
-  continueText: { fontSize: 11, fontWeight: '700', color: '#34342f' },
+  continueText: { ...theme.text11Bold, color: theme.textCheckoutButton },
 });

@@ -1,3 +1,4 @@
+import { theme } from '../assets/Themes';
 import {
   Image,
   Modal,
@@ -57,7 +58,6 @@ export type CartItem = Item & {
 };
 
 export default function Products() {
-
   const products = [
     {
       id: 1,
@@ -139,7 +139,7 @@ export default function Products() {
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ6Ekyp9jLjWMwOalnquLkO7sbUyn7crB0Bfnq2-pODg&s=10',
     },
   ];
-  
+
   const cartItems = useSelector(
     (state: { reducer: CartItem[] }) => state.reducer,
   );
@@ -151,15 +151,18 @@ export default function Products() {
     dispatch(removeToCart(id));
   };
 
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [openPopup, setOpenPopup] = useState<'sort' | 'price' | null>(null);
   const [selectedSort, setSelectedSort] = useState<SortOption>('recommended');
-  const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRangeId>('any');
+  const [selectedPriceRange, setSelectedPriceRange] =
+    useState<PriceRangeId>('any');
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const activePriceRange = priceRanges.find(
     range => range.id === selectedPriceRange,
   );
+  const activeSortRange = sortOptions.find(range => range.id === selectedSort);
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase();
   const filteredProducts = products.filter(
     item =>
@@ -181,7 +184,11 @@ export default function Products() {
     }
   });
   const popupOptions =
-    openPopup === 'sort' ? sortOptions : openPopup === 'price' ? priceRanges : [];
+    openPopup === 'sort'
+      ? sortOptions
+      : openPopup === 'price'
+      ? priceRanges
+      : [];
   const selectedOption =
     openPopup === 'sort' ? selectedSort : selectedPriceRange;
   const handleSelectOption = (optionId: SortOption | PriceRangeId) => {
@@ -207,8 +214,10 @@ export default function Products() {
           activeOpacity={0.75}
           onPress={() => setOpenPopup('sort')}
         >
-          <Text style={styles.filterText}>Sort</Text>
-          <Feather name="chevron-down" size={14} color="#282827" />
+          <Text style={styles.filterText}>
+            {selectedSort === 'recommended' ? 'Sort' : activeSortRange?.label}
+          </Text>
+          <Feather name="chevron-down" size={14} color={theme.textControl} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.filterButton}
@@ -216,11 +225,9 @@ export default function Products() {
           onPress={() => setOpenPopup('price')}
         >
           <Text style={styles.filterText}>
-            {selectedPriceRange === 'any'
-              ? 'Price'
-              : activePriceRange?.label}
+            {selectedPriceRange === 'any' ? 'Price' : activePriceRange?.label}
           </Text>
-          <Feather name="chevron-down" size={14} color="#282827" />
+          <Feather name="chevron-down" size={14} color={theme.textControl} />
         </TouchableOpacity>
         {isSearchVisible ? (
           <View style={styles.searchInputRow}>
@@ -229,7 +236,7 @@ export default function Products() {
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Search..."
-              placeholderTextColor="#858580"
+              placeholderTextColor={theme.textPlaceholder}
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="search"
@@ -244,7 +251,7 @@ export default function Products() {
                 accessibilityRole="button"
                 accessibilityLabel="Clear search"
               >
-                <Feather name="x" size={18} color="#777773" />
+                <Feather name="x" size={18} color={theme.textMuted} />
               </TouchableOpacity>
             ) : null}
           </View>
@@ -262,9 +269,11 @@ export default function Products() {
             }
           }}
           accessibilityRole="button"
-          accessibilityLabel={isSearchVisible ? 'Close search' : 'Search products'}
+          accessibilityLabel={
+            isSearchVisible ? 'Close search' : 'Search products'
+          }
         >
-          <Feather name="search" size={20} color="#272725" />
+          <Feather name="search" size={20} color={theme.textStrong} />
         </TouchableOpacity>
       </View>
 
@@ -277,6 +286,7 @@ export default function Products() {
           </Text>
         ) : null}
         {visibleProducts.map(item => {
+          const isFavorite = favoriteIds.includes(item.id);
           const matchedCartItem = cartItems.find(
             cartItem => cartItem.id === item.id,
           );
@@ -287,8 +297,22 @@ export default function Products() {
                   style={styles.mobileImage}
                   source={{ uri: item.image }}
                 />
-                <TouchableOpacity style={styles.heart} activeOpacity={0.7}>
-                  <Feather name="heart" size={18} color="#272725" />
+                <TouchableOpacity
+                  style={styles.heart}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    setFavoriteIds(prev =>
+                      prev.includes(item.id)
+                        ? prev.filter(id => id !== item.id)
+                        : [...prev, item.id],
+                    )
+                  }
+                >
+                  {isFavorite ? (
+                    <Feather name="heart" size={18} color={theme.favorite} />
+                  ) : (
+                    <Feather name="heart" size={18} color={theme.textStrong} />
+                  )}
                 </TouchableOpacity>
               </View>
               <View style={styles.details}>
@@ -308,7 +332,11 @@ export default function Products() {
                       style={styles.quantityButton}
                       activeOpacity={0.8}
                     >
-                      <Feather name="minus" size={16} color="#272725" />
+                      <Feather
+                        name="minus"
+                        size={16}
+                        color={theme.textStrong}
+                      />
                     </TouchableOpacity>
                     <Text style={styles.quantity}>
                       {matchedCartItem.quantity}
@@ -318,7 +346,7 @@ export default function Products() {
                       style={styles.quantityButton}
                       activeOpacity={0.8}
                     >
-                      <Feather name="plus" size={16} color="#272725" />
+                      <Feather name="plus" size={16} color={theme.textStrong} />
                     </TouchableOpacity>
                   </View>
                 ) : (
@@ -340,6 +368,7 @@ export default function Products() {
         transparent
         animationType="slide"
         onRequestClose={() => setOpenPopup(null)}
+        presentationStyle="pageSheet"
       >
         <View style={styles.modalOverlay}>
           <TouchableOpacity
@@ -360,7 +389,7 @@ export default function Products() {
                 accessibilityRole="button"
                 accessibilityLabel="Close options"
               >
-                <Feather name="x" size={20} color="#777773" />
+                <Feather name="x" size={20} color={theme.textMuted} />
               </TouchableOpacity>
             </View>
             {popupOptions.map(option => (
@@ -393,7 +422,7 @@ export default function Products() {
 }
 
 const styles = StyleSheet.create({
-  page: { backgroundColor: '#f6f6f4', paddingBottom: 20 },
+  page: { backgroundColor: theme.screenBackground, paddingBottom: 20 },
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -409,17 +438,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 18,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.white,
     borderWidth: 1,
-    borderColor: '#e5e5e1',
+    borderColor: theme.borderInput,
   },
   searchInput: {
     flex: 1,
     minWidth: 0,
     height: '100%',
     paddingVertical: 0,
-    color: '#282827',
-    fontSize: 12,
+    color: theme.textControl,
+    ...theme.text12,
   },
   clearSearchButton: {
     width: 32,
@@ -431,26 +460,26 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 11,
     borderRadius: 18,
-    backgroundColor: '#ecece9',
+    backgroundColor: theme.controlBackground,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
   },
-  filterText: { fontSize: 11, fontWeight: '600', color: '#282827' },
+  filterText: { ...theme.text11Semibold, color: theme.textControl },
   emptyMessage: {
     width: '100%',
     paddingVertical: 28,
     textAlign: 'center',
-    color: '#777773',
-    fontSize: 14,
+    color: theme.textMuted,
+    ...theme.text14,
   },
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: theme.modalBackdrop,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 20,
@@ -463,37 +492,37 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  modalTitle: { fontSize: 17, fontWeight: '700', color: '#252523' },
+  modalTitle: { ...theme.text17Bold, color: theme.textPrimary },
   optionRow: {
     minHeight: 49,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ecece9',
+    borderBottomColor: theme.controlBackground,
   },
-  optionText: { fontSize: 14, color: '#282827' },
+  optionText: { ...theme.text14, color: theme.textControl },
   radioOuter: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: '#aaa',
+    borderColor: theme.borderRadio,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioOuterSelected: { borderColor: '#272725' },
+  radioOuterSelected: { borderColor: theme.textStrong },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#272725',
+    backgroundColor: theme.textStrong,
   },
   searchButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#ecece9',
+    backgroundColor: theme.controlBackground,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 'auto',
@@ -507,10 +536,10 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '48.6%',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.white,
     borderRadius: 14,
     overflow: 'hidden',
-    shadowColor: '#1d1d1b',
+    shadowColor: theme.shadowProduct,
     shadowOpacity: 0.06,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -518,7 +547,7 @@ const styles = StyleSheet.create({
   },
   imageWrap: {
     height: 174,
-    backgroundColor: '#ecebe7',
+    backgroundColor: theme.productImageBackground,
     position: 'relative',
     justifyContent: 'center',
   },
@@ -530,29 +559,28 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.86)',
+    backgroundColor: theme.favoriteButtonBackground,
     alignItems: 'center',
     justifyContent: 'center',
   },
   details: { paddingHorizontal: 10, paddingTop: 10, paddingBottom: 11 },
   name: {
-    fontSize: 13,
-    lineHeight: 17,
-    fontWeight: '700',
-    color: '#252523',
+    ...theme.text13BoldLine17,
+
+    color: theme.textPrimary,
     minHeight: 34,
   },
-  color: { fontSize: 11, lineHeight: 15, color: '#777773', marginTop: 2 },
-  price: { fontSize: 13, fontWeight: '700', color: '#242422', marginTop: 5 },
+  color: { ...theme.text11, color: theme.textMuted, marginTop: 2 },
+  price: { ...theme.text13Bold, color: theme.textPrice, marginTop: 5 },
   cartButton: {
-    backgroundColor: '#272725',
+    backgroundColor: theme.textStrong,
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 9,
     marginTop: 10,
   },
-  cartButtonText: { color: '#ffffff', fontSize: 11, fontWeight: '700' },
+  cartButtonText: { color: theme.white, ...theme.text11Bold },
   quantityRow: {
     height: 35,
     marginTop: 10,
@@ -565,9 +593,13 @@ const styles = StyleSheet.create({
     width: 27,
     height: 27,
     borderRadius: 14,
-    backgroundColor: '#ecece9',
+    backgroundColor: theme.controlBackground,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quantity: { minWidth: 14, textAlign: 'center', fontSize: 12, fontWeight: '700' },
+  quantity: {
+    minWidth: 14,
+    textAlign: 'center',
+    ...theme.text12Bold,
+  },
 });

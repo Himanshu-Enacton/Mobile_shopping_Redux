@@ -1,25 +1,30 @@
-
 import ProductWrapper from './components/ProductWrapper';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import CartList from './components/CartList';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import UserList from './components/UserList';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 const Stack = createNativeStackNavigator();
 function App() {
   return (
-    <SafeAreaProvider>
-      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Home" component={ProductWrapper} />
-            <Stack.Screen name="List" component={CartList} />
-            <Stack.Screen name="User" component={UserList} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <SafeAreaProvider>
+          <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+            <NavigationContainer>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Home" component={ProductWrapper} />
+                <Stack.Screen name="List" component={CartList} />
+                <Stack.Screen name="User" component={UserList} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }
 

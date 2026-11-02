@@ -1,3 +1,4 @@
+import { theme } from '../assets/Themes';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import type { CartItem } from './Products';
@@ -42,7 +43,7 @@ export default function Header({ navigation }: { navigation: any }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f6f6f4',
+    backgroundColor: theme.screenBackground,
     paddingHorizontal: 18,
     paddingTop: 23,
     paddingBottom: 18,
@@ -53,28 +54,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   eyebrow: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#767671',
-    letterSpacing: 1.4,
+    ...theme.text10ExtraBoldSpaced,
+
+    color: theme.textEyebrow,
+
     marginBottom: 4,
   },
   title: {
-    fontSize: 29,
-    lineHeight: 34,
-    fontWeight: '800',
-    letterSpacing: -0.8,
-    color: '#1e1e1c',
+    ...theme.text29ExtraBold,
+
+    color: theme.textHeading,
   },
-  subtitle: { fontSize: 13, color: '#757570', marginTop: 7 },
+  subtitle: { ...theme.text13, color: theme.textSecondary, marginTop: 7 },
   cartButton: {
     width: 45,
     height: 45,
     borderRadius: 23,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.white,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#222',
+    shadowColor: theme.shadowButton,
     shadowOpacity: 0.08,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -85,7 +84,7 @@ const styles = StyleSheet.create({
     height: 16,
     marginTop: 5,
     borderWidth: 1.8,
-    borderColor: '#272725',
+    borderColor: theme.textStrong,
     borderRadius: 3,
     alignItems: 'center',
   },
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
     height: 7,
     top: -7,
     borderWidth: 1.8,
-    borderColor: '#272725',
+    borderColor: theme.textStrong,
     borderBottomWidth: 0,
     borderTopLeftRadius: 6,
     borderTopRightRadius: 6,
@@ -110,9 +109,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#292927',
+    backgroundColor: theme.actionBackground,
     borderWidth: 2,
-    borderColor: '#f6f6f4',
+    borderColor: theme.screenBackground,
   },
-  count: { fontSize: 10, fontWeight: '800', color: '#ffffff' },
+  count: { ...theme.text10ExtraBold, color: theme.white },
 });

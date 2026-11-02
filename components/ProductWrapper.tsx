@@ -1,3 +1,4 @@
+import { theme } from '../assets/Themes';
 import {
   ScrollView,
   StyleSheet,
@@ -9,7 +10,7 @@ import React from 'react';
 import Header from './Header';
 import Products from './Products';
 
-export default function ProductWrapper({ navigation }:any) {
+export default function ProductWrapper({ navigation }: any) {
   return (
     <View style={styles.flex}>
       <Header navigation={navigation} />
@@ -36,14 +37,14 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 18,
     borderRadius: 24,
-    backgroundColor: '#292927',
+    backgroundColor: theme.actionBackground,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#222',
+    shadowColor: theme.shadowButton,
     shadowOpacity: 0.16,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 5,
   },
-  userButtonText: { fontSize: 14, fontWeight: '700', color: '#ffffff' },
+  userButtonText: { ...theme.text14Bold, color: theme.white },
 });

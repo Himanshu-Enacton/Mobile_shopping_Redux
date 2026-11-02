@@ -1,3 +1,4 @@
+import { theme } from '../assets/Themes';
 import React, { useCallback } from 'react';
 import {
   ActivityIndicator,
@@ -18,9 +19,11 @@ type RootState = ReturnType<typeof rootReducer>;
 
 export default function UserList({ navigation }: { navigation: any }) {
   const dispatch = useDispatch();
-  const { data: users, loading, error } = useSelector(
-    (state: RootState) => state.users,
-  );
+  const {
+    data: users,
+    loading,
+    error,
+  } = useSelector((state: RootState) => state.users);
 
   useFocusEffect(
     useCallback(() => {
@@ -42,10 +45,15 @@ export default function UserList({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
-        <TouchableOpacity onPress={()=>navigation.goBack()}><Text style={styles.backArrow}>‹</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Text style={styles.backArrow}>‹</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>Users</Text>
       {loading ? (
-        <ActivityIndicator color="#292927" style={styles.loading} />
+        <ActivityIndicator
+          color={theme.actionBackground}
+          style={styles.loading}
+        />
       ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <FlatList
@@ -66,22 +74,22 @@ export default function UserList({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f6f4',
+    backgroundColor: theme.screenBackground,
     paddingHorizontal: 18,
     paddingTop: 24,
   },
   title: {
-    color: '#1e1e1c',
-    fontSize: 28,
-    fontWeight: '800',
+    color: theme.textHeading,
+    ...theme.text28ExtraBold,
+
     marginBottom: 16,
   },
   loading: {
     marginVertical: 16,
   },
   error: {
-    color: '#b42318',
-    fontSize: 14,
+    color: theme.error,
+    ...theme.text14,
     marginBottom: 12,
   },
   listContent: {
@@ -89,14 +97,14 @@ const styles = StyleSheet.create({
   },
   userCard: {
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.white,
     borderRadius: 14,
     flexDirection: 'row',
     marginBottom: 10,
     padding: 12,
   },
   avatar: {
-    backgroundColor: '#e8e8e5',
+    backgroundColor: theme.avatarBackground,
     borderRadius: 24,
     height: 48,
     width: 48,
@@ -106,20 +114,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   userName: {
-    color: '#1e1e1c',
-    fontSize: 15,
-    fontWeight: '700',
+    color: theme.textHeading,
+    ...theme.text15Bold,
   },
   email: {
-    color: '#757570',
-    fontSize: 12,
+    color: theme.textSecondary,
+    ...theme.text12,
     marginTop: 4,
   },
   empty: {
-    color: '#757570',
-    fontSize: 14,
+    color: theme.textSecondary,
+    ...theme.text14,
     marginTop: 24,
     textAlign: 'center',
-  },backArrow: { fontSize: 29, lineHeight: 31, color: '#353532', marginTop: -3 },
-
+  },
+  backArrow: { ...theme.text29, color: theme.textBackArrow, marginTop: -3 },
 });
