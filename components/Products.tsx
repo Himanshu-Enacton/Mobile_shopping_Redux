@@ -1,7 +1,8 @@
 import { theme } from '../assets/Themes';
 import {
   Image,
-  Modal,
+  BackHandler,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -10,9 +11,14 @@ import {
 } from 'react-native';
 import { addToCart, removeToCart } from './redux/action';
 import { useDispatch, useSelector } from 'react-redux';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Feather } from '@react-native-vector-icons/feather/static';
-
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+  type BottomSheetBackdropProps,
+} from '@gorhom/bottom-sheet';
 type SortOption =
   | 'recommended'
   | 'price-low-high'
@@ -151,6 +157,19 @@ export default function Products() {
     dispatch(removeToCart(id));
   };
 
+  const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [openPopup, setOpenPopup] = useState<'sort' | 'price' | null>(null);
   const [selectedSort, setSelectedSort] = useState<SortOption>('recommended');
@@ -158,6 +177,23 @@ export default function Products() {
     useState<PriceRangeId>('any');
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (openPopup === null) {
+      return;
+    }
+
+    Keyboard.dismiss();
+    optionsSheetRef.current?.present();
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        optionsSheetRef.current?.dismiss();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [openPopup]);
 
   const activePriceRange = priceRanges.find(
     range => range.id === selectedPriceRange,
@@ -203,7 +239,7 @@ export default function Products() {
         setSelectedPriceRange(option.id);
       }
     }
-    setOpenPopup(null);
+    optionsSheetRef.current?.dismiss();
   };
 
   return (
@@ -363,60 +399,58 @@ export default function Products() {
           );
         })}
       </View>
-      <Modal
-        visible={openPopup !== null}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setOpenPopup(null)}
-        presentationStyle="pageSheet"
+      <BottomSheetModal
+        ref={optionsSheetRef}
+        enableDynamicSizing
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.sheetBackground}
+        handleIndicatorStyle={styles.sheetHandle}
+        onDismiss={() => setOpenPopup(null)}
       >
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity
-            style={StyleSheet.absoluteFill}
-            activeOpacity={1}
-            onPress={() => setOpenPopup(null)}
-            accessibilityRole="button"
-            accessibilityLabel="Close options"
-          />
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {openPopup === 'sort' ? 'Sort by' : 'Filter by price'}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setOpenPopup(null)}
-                activeOpacity={0.75}
-                accessibilityRole="button"
-                accessibilityLabel="Close options"
-              >
-                <Feather name="x" size={20} color={theme.textMuted} />
-              </TouchableOpacity>
-            </View>
-            {popupOptions.map(option => (
-              <TouchableOpacity
-                key={option.id}
-                style={styles.optionRow}
-                activeOpacity={0.75}
-                accessibilityRole="button"
-                accessibilityState={{ selected: option.id === selectedOption }}
-                onPress={() => handleSelectOption(option.id)}
-              >
-                <Text style={styles.optionText}>{option.label}</Text>
-                <View
-                  style={[
-                    styles.radioOuter,
-                    option.id === selectedOption && styles.radioOuterSelected,
-                  ]}
-                >
-                  {option.id === selectedOption ? (
-                    <View style={styles.radioInner} />
-                  ) : null}
-                </View>
-              </TouchableOpacity>
-            ))}
+        <BottomSheetScrollView
+          contentContainerStyle={[
+            styles.sheetContent,
+          ]}
+        >
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle} accessibilityRole="header">
+              {openPopup === 'sort' ? 'Sort by' : 'Filter by price'}
+            </Text>
+            <TouchableOpacity
+              onPress={() => optionsSheetRef.current?.dismiss()}
+              style={styles.closeButton}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Close options"
+            >
+              <Feather name="x" size={20} color={theme.textMuted} />
+            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
+          {popupOptions.map(option => (
+            <TouchableOpacity
+              key={option.id}
+              style={styles.optionRow}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityState={{ selected: option.id === selectedOption }}
+              onPress={() => handleSelectOption(option.id)}
+            >
+              <Text style={styles.optionText}>{option.label}</Text>
+              <View
+                style={[
+                  styles.radioOuter,
+                  option.id === selectedOption && styles.radioOuterSelected,
+                ]}
+              >
+                {option.id === selectedOption ? (
+                  <View style={styles.radioInner} />
+                ) : null}
+              </View>
+            </TouchableOpacity>
+          ))}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
     </View>
   );
 }
@@ -473,26 +507,26 @@ const styles = StyleSheet.create({
     color: theme.textMuted,
     ...theme.text14,
   },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: theme.modalBackdrop,
-  },
-  modalContent: {
+  sheetBackground: {
     backgroundColor: theme.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 28,
   },
-  modalHeader: {
+  sheetHandle: { backgroundColor: theme.borderRadio },
+  sheetContent: { paddingHorizontal: 20,paddingBottom:34 },
+  sheetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  modalTitle: { ...theme.text17Bold, color: theme.textPrimary },
+  sheetTitle: { ...theme.text17Bold, color: theme.textPrimary },
+  closeButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   optionRow: {
     minHeight: 49,
     flexDirection: 'row',

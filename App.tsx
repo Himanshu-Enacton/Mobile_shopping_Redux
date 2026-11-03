@@ -6,6 +6,8 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import UserList from './components/UserList';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import FinalPage from './components/FinalPage';
+import UserDetails from './components/UserDetails';
 
 const Stack = createNativeStackNavigator();
 function App() {
@@ -19,6 +21,8 @@ function App() {
                 <Stack.Screen name="Home" component={ProductWrapper} />
                 <Stack.Screen name="List" component={CartList} />
                 <Stack.Screen name="User" component={UserList} />
+                <Stack.Screen name="Final" component={FinalPage} />
+                <Stack.Screen name="UserDetails" component={UserDetails} />
               </Stack.Navigator>
             </NavigationContainer>
           </SafeAreaView>

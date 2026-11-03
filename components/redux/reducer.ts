@@ -1,5 +1,5 @@
 import type { CartItem, Item } from "../Products";
-import { ADD_TO_CART, REMOVE_TO_CART } from "./constants";
+import { ADD_TO_CART, REMOVE_TO_CART, RESET_ALL } from "./constants";
 
 const initialState: CartItem[] = [];
 
@@ -27,7 +27,10 @@ export const reducer = (state = initialState, action: any): CartItem[] => {
         return item.quantity > 1
           ? [{ ...item, quantity: item.quantity - 1 }]
           : [];
-      });
+      })
+    case RESET_ALL:
+       state = [];
+       return state;
     default:
       return state;
   }

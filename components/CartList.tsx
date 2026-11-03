@@ -7,10 +7,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { CartItem, Item } from './Products';
 import { addToCart, removeToCart } from './redux/action';
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+  type BottomSheetBackdropProps,
+} from '@gorhom/bottom-sheet';
 
 export default function CartList({ navigation }: { navigation: any }) {
   const cartItems = useSelector(
@@ -33,6 +39,22 @@ export default function CartList({ navigation }: { navigation: any }) {
     dispatch(removeToCart(id));
   };
 
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
@@ -45,9 +67,7 @@ export default function CartList({ navigation }: { navigation: any }) {
         <Text pointerEvents="none" style={styles.headerTitle}>
           My Cart
         </Text>
-        <View style={styles.checkoutPill}>
-          <Text style={styles.checkoutText}>Checkout</Text>
-        </View>
+        
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
@@ -112,9 +132,47 @@ export default function CartList({ navigation }: { navigation: any }) {
           Total ({cartItems.reduce((total, item) => total + item.quantity, 0)}{' '}
           items)
         </Text>
-        <View style={styles.continueButton}>
+        <TouchableOpacity
+          style={styles.continueButton}
+          onPress={handlePresentModalPress}
+        >
           <Text style={styles.continueText}>Continue to Checkout</Text>
-        </View>
+        </TouchableOpacity>
+        <BottomSheetModal
+          ref={bottomSheetModalRef}
+          enableDynamicSizing
+          enablePanDownToClose
+          backdropComponent={renderBackdrop}
+          backgroundStyle={styles.sheetBackground}
+          handleIndicatorStyle={styles.sheetHandle}
+        >
+          <BottomSheetView style={styles.sheetContent}>
+            <Text style={styles.sheetTitle} accessibilityRole="header">
+              Ready to checkout?
+            </Text>
+            <View style={styles.confirm}>
+              <TouchableOpacity
+                style={[styles.confirmButton, styles.cancelButton]}
+                onPress={() => bottomSheetModalRef.current?.dismiss()}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmButton, styles.proceedButton]}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                onPress={()=>{
+                  bottomSheetModalRef.current?.dismiss();
+                  navigation.navigate('UserDetails');
+                }}
+              >
+                <Text style={styles.proceedText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </BottomSheetView>
+        </BottomSheetModal>
       </View>
     </View>
   );
@@ -146,7 +204,8 @@ const styles = StyleSheet.create({
     right: 0,
     textAlign: 'center',
     ...theme.text16Bold,
-
+    fontSize: 25,
+    paddingLeft:23,
     color: theme.textPrimary,
   },
   checkoutPill: {
@@ -155,7 +214,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 9,
   },
-  checkoutText: { ...theme.text11Bold, color: theme.textCheckout },
+  checkoutText: { ...theme.text11Bold, color: theme.textCheckout, },
   scroll: { flex: 1 },
   content: {
     paddingHorizontal: 18,
@@ -228,6 +287,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   footer: {
+    paddingBottom: 25,
     minHeight: 74,
     paddingHorizontal: 25,
     borderTopWidth: 1,
@@ -245,4 +305,40 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   continueText: { ...theme.text11Bold, color: theme.textCheckoutButton },
+  sheetBackground: {
+    backgroundColor: theme.white,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+  },
+  sheetHandle: { backgroundColor: theme.borderRadio },
+  sheetContent: {
+    paddingHorizontal: 22,
+    paddingTop: 10,
+    paddingBottom: 30,
+  },
+  sheetTitle: {
+    ...theme.text17Bold,
+    color: theme.textPrimary,
+  },
+  sheetDescription: {
+    ...theme.text13,
+    color: theme.textSecondary,
+    marginTop: 6,
+  },
+  confirm: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 22,
+  },
+  confirmButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: { backgroundColor: theme.controlBackground },
+  cancelText: { ...theme.text13Bold, color: theme.textControl },
+  proceedButton: { backgroundColor: theme.actionBackground },
+  proceedText: { ...theme.text13Bold, color: theme.white },
 });

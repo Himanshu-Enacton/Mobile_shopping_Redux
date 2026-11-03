@@ -2,6 +2,7 @@ import type { Item } from '../Products';
 import {
     ADD_TO_CART,
     REMOVE_TO_CART,
+    RESET_ALL,
     USER_LIST,
     USER_LIST_FAILURE,
     USER_LIST_SUCCESS,
@@ -45,4 +46,10 @@ export function userListFailure(error: string) {
         type: USER_LIST_FAILURE as typeof USER_LIST_FAILURE,
         data: error,
     };
+}
+
+export function resetAll(){
+    return {
+        type: RESET_ALL as typeof RESET_ALL
+    }
 }

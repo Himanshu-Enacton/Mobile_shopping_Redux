@@ -17,13 +17,13 @@ export default function ProductWrapper({ navigation }: any) {
       <ScrollView>
         <Products />
       </ScrollView>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.userButton}
         activeOpacity={0.75}
         onPress={() => navigation.navigate('User')}
       >
         <Text style={styles.userButtonText}>User</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }
