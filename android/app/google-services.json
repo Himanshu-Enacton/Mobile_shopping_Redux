@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "236520223555",
+    "project_id": "mobileshoppingredux",
+    "storage_bucket": "mobileshoppingredux.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:236520223555:android:069ce59165bf0be9a975f6",
+        "android_client_info": {
+          "package_name": "com.larabackapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-u7aRucsecywOlLuPtbNMzGxnTDc-4ys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

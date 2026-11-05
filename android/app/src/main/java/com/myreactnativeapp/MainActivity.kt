@@ -1,4 +1,4 @@
-package com.myreactnativeapp
+package com.larabackapp
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

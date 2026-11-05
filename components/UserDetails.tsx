@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -9,11 +10,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Formik } from 'formik';
+import { Formik, type FormikErrors } from 'formik';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { theme } from '../assets/Themes';
 import { Feather } from '@react-native-vector-icons/feather/static';
+import type { CustomerDetails, RootStackParamList } from './navigationTypes';
 
-export default function UserDetails() {
+type UserDetailsProps = NativeStackScreenProps<
+  RootStackParamList,
+  'UserDetails'
+>;
+
+export default function UserDetails({ navigation }: UserDetailsProps) {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
@@ -35,9 +43,47 @@ export default function UserDetails() {
 
         <Formik
           initialValues={{ name: '', address: '', email: '' }}
-          onSubmit={values => console.log(values)}
+          validate={(values): FormikErrors<CustomerDetails> => {
+            const errors: FormikErrors<CustomerDetails> = {};
+            if (!values.name.trim()) {
+              errors.name = 'Enter your full name.';
+            }
+            if (!values.address.trim()) {
+              errors.address = 'Enter your delivery address.';
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+              errors.email = 'Enter a valid email address.';
+            }
+            return errors;
+          }}
+          onSubmit={values => {
+            const customerDetails = {
+              name: values.name.trim(),
+              address: values.address.trim(),
+              email: values.email.trim(),
+            };
+            Alert.alert(
+              'Place your order?',
+              'Your details are ready. Confirm to place your order.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Place order',
+                  onPress: () => navigation.replace('Final', { customerDetails }),
+                },
+              ],
+              { cancelable: true },
+            );
+          }}
         >
-          {({ handleChange, handleBlur, handleSubmit, values }) => (
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+          }) => (
             <View style={styles.form}>
               <View style={styles.card}>
                 <Text style={styles.sectionTitle} accessibilityRole="header">
@@ -60,6 +106,9 @@ export default function UserDetails() {
                     onBlur={handleBlur('name')}
                     value={values.name}
                   />
+                  {touched.name && errors.name ? (
+                    <Text style={styles.fieldError}>{errors.name}</Text>
+                  ) : null}
                 </View>
 
                 <View style={styles.field}>
@@ -77,6 +126,9 @@ export default function UserDetails() {
                     onBlur={handleBlur('address')}
                     value={values.address}
                   />
+                  {touched.address && errors.address ? (
+                    <Text style={styles.fieldError}>{errors.address}</Text>
+                  ) : null}
                 </View>
 
                 <View style={styles.field}>
@@ -94,6 +146,9 @@ export default function UserDetails() {
                     onBlur={handleBlur('email')}
                     value={values.email}
                   />
+                  {touched.email && errors.email ? (
+                    <Text style={styles.fieldError}>{errors.email}</Text>
+                  ) : null}
                 </View>
               </View>
 
@@ -110,12 +165,11 @@ export default function UserDetails() {
                         color={theme.textStrong}
                       />
                     </View>
-                        <View>
-
-                    <Text style={styles.paymentTitle}>Cash on Delivery</Text>
-                    <Text style={styles.paymentDescription}>
-                      Pay when it arrives
-                    </Text>
+                    <View>
+                      <Text style={styles.paymentTitle}>Cash on Delivery</Text>
+                      <Text style={styles.paymentDescription}>
+                        Pay when it arrives
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -187,6 +241,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
+  fieldError: {
+    ...theme.text12,
+    color: theme.error,
+    marginTop: 6,
+  },
   addressInput: { minHeight: 108 },
   paymentSection: { marginTop: 24 },
   paymentOptions: { flexDirection: 'row', gap: 12, marginTop: 14 },
@@ -200,8 +259,8 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   paymentIcon: {
-    marginRight:15,
-    marginLeft:15,
+    marginRight: 15,
+    marginLeft: 15,
     width: 42,
     height: 42,
     borderRadius: 12,
