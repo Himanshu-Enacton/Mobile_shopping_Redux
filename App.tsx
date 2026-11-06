@@ -62,10 +62,10 @@ useEffect(() => {
 
   fetchFCMToken();
 
-  const unsubscribe = onMessage(remoteMessage, async remoteMessage =>{
-    console.log('Message received in the foreground:', remoteMessage);
+  const unsubscribe = onMessage(remoteMessage, async message =>{
+    console.log('Message received in the foreground:', message);
     try {
-      await onDisplayNotification(remoteMessage);
+      await onDisplayNotification(message);
     } catch (error) {
       console.error('Notification display failed:', error);
     }
